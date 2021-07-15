@@ -1,0 +1,45 @@
+  {
+    "jobName": "flinkStreamEngine",
+    "createTables": [
+      "CREATE TABLE input_kafka(`agentId` STRING,`collectTime` BIGINT,`endTimestamp` BIGINT,`instanceId` STRING,`messageData` MAP<STRING,STRING>,`modelCode` STRING,`sendTime` BIGINT,`serviceName` STRING,`startTimestamp` BIGINT,`topic` STRING) WITH ('connector' = 'kafka','topic' = 'aim_service_2','properties.bootstrap.servers' = '10.1.241.162:9092','properties.group.id' = 'machine_kafka_log','format' = 'json','scan.startup.mode' = 'earliest-offset')",
+      "CREATE TABLE out_clickhouse(`agentId` STRING,`collectTime` BIGINT,`endTimestamp` BIGINT,`instanceId` STRING,`metrisName` STRING,`factor` BIGINT,`metrisValue` BIGINT,`modelCode` STRING,`sendTime` BIGINT,`serviceName` STRING,`startTimestamp` BIGINT,`insertTime` BIGINT) WITH ('connector' = 'clickhouse','url' = 'clickhouse://10.15.50.23:8123','username' = 'aiops','password' = 'aiops_2019','database-name' = 'default','table-name' = 'aim_service_t4','sink.batch-size' = '10','sink.flush-interval' = '1000','sink.max-retries' = '3','sink.partition-strategy' = 'hash','sink.partition-key' = 'name','sink.ignore-delete' = 'true')"
+    ],
+    "transforms": [
+      {
+        "querySQL": "select agentId,collectTime,endTimestamp,instanceId,messageData,modelCode,sendTime,serviceName,startTimestamp,topic from input_kafka",
+        "transformDatas": [
+          {
+            "name": "messageData",
+            "method": "oneToMultiRow",
+            "toColumns": [
+              {
+                "name": "metrisName",
+                "type": "String",
+                "location": "key"
+              },
+              {
+                "name": "metrisValue",
+                "type": "BIGINT",
+                "location": "value"
+              },
+              {
+                "name": "factor",
+                "type": "INT",
+                "location": "add"
+              }
+            ]
+          }
+        ],
+        "tableName": "change_kafka"
+      }
+    ],
+    "sinks": {
+      "createTables": [
+        "create tables",
+        "create tables"
+      ],
+      "insertSQLs": [
+        "INSERT INTO out_clickhouse  select agentId,collectTime,endTimestamp,instanceId,metrisName,factor,metrisValue,modelCode,sendTime,serviceName,startTimestamp,1615870801 as insertTime from change_kafka"
+      ]
+    }
+  }
