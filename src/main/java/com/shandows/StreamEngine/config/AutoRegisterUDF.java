@@ -1,6 +1,6 @@
 package com.shandows.StreamEngine.config;
 
-import com.yx.utils.ScanningFile;
+import com.shandows.StreamEngine.util.ScanningFile;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 
 import java.util.List;
